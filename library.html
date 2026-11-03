@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>全量情报库・全件ライブラリ | DEALS NO MORI</title>
+<style>
+:root{--bg:#F7F7F4;--surface:#fff;--soft:#eaf5ee;--ink:#14201A;--muted:#626d65;--green:#0B8754;--green-ink:#07683f;--line:#E7E7E0;--serif:"Yu Mincho","Hiragino Mincho ProN",serif;--sans:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#101713;--surface:#18221c;--soft:#203c2c;--ink:#edf4ee;--muted:#a2b2a7;--green-ink:#8ae2b2;--line:#2c3b31;color-scheme:dark}}
+:root[data-theme=light]{--bg:#F7F7F4;--surface:#fff;--soft:#eaf5ee;--ink:#14201A;--muted:#626d65;--green-ink:#07683f;--line:#E7E7E0;color-scheme:light}
+:root[data-theme=dark]{--bg:#101713;--surface:#18221c;--soft:#203c2c;--ink:#edf4ee;--muted:#a2b2a7;--green-ink:#8ae2b2;--line:#2c3b31;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 var(--sans)}a{color:var(--green-ink);text-underline-offset:4px}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--green-ink);outline-offset:4px}[hidden]{display:none!important}.wrap{max-width:1100px;margin:auto;padding:0 28px}header{border-bottom:1px solid var(--line)}header .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:86px}.brand{font:20px var(--serif);letter-spacing:.06em}main{padding-top:54px!important;padding-bottom:72px!important}h1{font:clamp(28px,4vw,44px)/1.3 var(--serif);margin:0 0 16px}.intro{color:var(--muted);max-width:760px;margin-bottom:32px}.toolbar{background:var(--soft);padding:24px;border-radius:4px 18px 4px 18px}label{display:block;font-weight:600;margin-bottom:8px}input{width:100%;padding:14px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink)}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}button{border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:44px;padding:8px 14px}.chips button[aria-pressed=true]{background:var(--green);color:#fff;border-color:var(--green)}.results-line{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted);margin:25px 0 12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.deal-card{min-width:0;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--green);border-radius:4px 16px 4px 16px;padding:24px;overflow-wrap:anywhere}h2{font:600 20px/1.5 var(--serif);margin:10px 0 18px}.meta,.period{color:var(--muted);font-size:14px}.deal-card p{margin:12px 0}.zh{border-top:1px solid var(--line);padding-top:12px}summary{cursor:pointer;color:var(--green-ink);min-height:44px;display:list-item;padding:8px 0}details p{white-space:pre-wrap}.source{display:inline-block;padding:10px 0;min-height:44px}.pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:20px;margin-top:30px}.empty{padding:40px 0;text-align:center}footer{border-top:1px solid var(--line);padding:25px 0;color:var(--muted);font-size:14px}@media(max-width:650px){.wrap{padding:0 18px}.grid{grid-template-columns:1fr}main{padding-top:32px!important}.toolbar,.deal-card{padding:18px}header .wrap{flex-wrap:wrap;padding-top:16px;padding-bottom:16px;gap:8px}.brand{font-size:17px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="index.html">DEALS NO MORI</a><a href="index.html">ホームへ / 返回首页 ↗</a></div></header>
+<main class="wrap" id="main">
+<h1>全件ライブラリ <span lang="zh-CN">/ 全量情报库</span></h1>
+<p class="intro">may-money.com の事実情報と独自の中国語要約を収録。終了済みの情報も含みます。利用前に原文で条件をご確認ください。<br><span lang="zh-CN">收录事实信息与中文摘要，含已结束活动；参与前请查看原文确认条件。</span></p>
+<section class="toolbar" aria-label="検索・分類 / 搜索与分类">
+<label for="search">タイトル・ブランド・要点 / 标题・品牌・要点</label>
+<input type="search" id="search" placeholder="キーワードを入力 / 输入关键词" autocomplete="off" disabled>
+<div class="chips" id="categories" role="group" aria-label="分類 / 分类"></div>
+</section>
+<div class="results-line"><span id="status" role="status" aria-live="polite">読み込み中 / 正在加载…</span><span>終了日順 → 日付なしは原文新着順 / 结束日优先</span></div>
+<p id="error" role="alert" hidden>読み込めませんでした。再読み込みしてください。/ 加载失败，请刷新重试。</p>
+<noscript><p>JavaScript が必要です / 请启用 JavaScript。<a href="deals-data.json">JSON データ / 下载数据</a></p></noscript>
+<div id="deal-list" class="grid" aria-busy="true"></div>
+<p id="empty" class="empty" hidden>該当する情報はありません / 没有匹配结果</p>
+<nav class="pagination" aria-label="ページ / 分页"><button id="prev" disabled>← 前へ / 上一页</button><span id="page-count">0 / 0</span><button id="next" disabled>次へ / 下一页 →</button></nav>
+</main>
+<footer><div class="wrap">DEALS NO MORI · 出典 / 来源: may-money.com · 画像・原文本文の転載なし / 不转载原图与正文</div></footer>
+<script>
+'use strict';
+try{const theme=localStorage.getItem('deals-theme');if(theme==='dark'||theme==='light')document.documentElement.dataset.theme=theme}catch{}
+const categories=[['飲食','餐饮'],['決済・ポイント','支付・积分'],['旅行・交通','旅行・交通'],['通信','通信'],['金融','金融'],['イベント','活动'],['スーパー・コンビニ','超市・便利店'],['カード','信用卡'],['その他','其他']];
+const list=document.querySelector('#deal-list'),search=document.querySelector('#search'),status=document.querySelector('#status'),prev=document.querySelector('#prev'),next=document.querySelector('#next');
+const PAGE_SIZE=50;let records=[],category='',page=1;
+const normalize=value=>String(value||'').normalize('NFKC').toLocaleLowerCase();
+function node(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el}
+function card(record){
+ const el=node('article',undefined,'deal-card');
+ el.append(node('div',[record.brand||'—',record.category,record.kind].filter(Boolean).join(' · '),'meta'),node('h2',record.title_ja));
+ el.append(node('p','期間 / 期间: '+(record.start||record.end?`${record.start||'未定'} – ${record.end||'未定'}`:'常設/未定'),'period'));
+ el.append(node('p','要点 / 要点: '+(record.benefit||'未記載 / 未注明')));
+ const details=node('details');details.append(node('summary','条件を確認 / 查看条件'),node('p',record.conditions||'未記載 / 未注明'));el.append(details);
+ const summary=node('p',record.zh_summary,'zh');summary.lang='zh-CN';el.append(summary);
+ const link=node('a','原文 / 来源: may-money.com ↗','source');link.href=record.url;link.target='_blank';link.rel='noopener noreferrer';el.append(link);return el;
+}
+function render(){
+ const query=normalize(search.value).trim();
+ const filtered=records.filter(record=>(!category||record.category===category)&&(!query||normalize([record.title_ja,record.brand,record.benefit].join(' ')).includes(query)));
+ const pages=Math.ceil(filtered.length/PAGE_SIZE);page=Math.max(1,Math.min(page,pages||1));
+ list.replaceChildren(...filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE).map(card));
+ status.textContent=`${filtered.length} 件 / 条 · 全 ${records.length} 件 / 条`;
+ document.querySelector('#page-count').textContent=`${pages?page:0} / ${pages} ページ / 页`;
+ prev.disabled=page<=1;next.disabled=page>=pages;document.querySelector('#empty').hidden=filtered.length!==0;
+}
+function changePage(delta){page+=delta;render();document.querySelector('#search').scrollIntoView({block:'start'});}
+prev.addEventListener('click',()=>changePage(-1));next.addEventListener('click',()=>changePage(1));
+search.addEventListener('input',()=>{page=1;render()});
+for(const [value,label] of [['','全部 / 全部'],...categories.map(([ja,zh])=>[ja,ja+' / '+zh])]){
+ const button=node('button',label);button.type='button';button.dataset.category=value;button.setAttribute('aria-pressed',String(!value));button.disabled=true;
+ button.addEventListener('click',()=>{category=value;page=1;document.querySelectorAll('#categories button').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));render()});document.querySelector('#categories').append(button);
+}
+(async()=>{try{
+ const response=await fetch('deals-data.json');if(!response.ok)throw new Error('HTTP '+response.status);
+ records=await response.json();
+ records.sort((a,b)=>a.end&&b.end?a.end.localeCompare(b.end):a.end?-1:b.end?1:(Date.parse(b.lastmod)||0)-(Date.parse(a.lastmod)||0));
+ search.disabled=false;document.querySelectorAll('#categories button').forEach(el=>el.disabled=false);render();
+}catch{status.textContent='読み込み失敗 / 加载失败';document.querySelector('#error').hidden=false}finally{list.setAttribute('aria-busy','false')}})();
+</script>
+</body>
+</html>
