@@ -17,7 +17,7 @@
 <header><div class="wrap"><a class="brand" href="index.html">DEALS NO MORI</a><a href="index.html">ホームへ / 返回首页 ↗</a></div></header>
 <main class="wrap" id="main">
 <h1>全件ライブラリ <span lang="zh-CN">/ 全量情报库</span></h1>
-<p class="intro">may-money.com の事実情報と独自の中国語要約を収録。終了済みの情報も含みます。利用前に原文で条件をご確認ください。<br><span lang="zh-CN">收录事实信息与中文摘要，含已结束活动；参与前请查看原文确认条件。</span></p>
+<p class="intro">may-money.com・人気ポイ活ブログ・PayPay 公式の事実情報と独自の中国語要約を収録。終了済みの情報は除いています。利用前に原文で条件をご確認ください。<br><span lang="zh-CN">收录 may-money、知名薅羊毛博客与 PayPay 官方的事实信息与中文摘要，已剔除已结束活动；参与前请查看原文确认条件。</span></p>
 <section class="toolbar" aria-label="検索・分類 / 搜索与分类">
 <label for="search">タイトル・ブランド・要点 / 标题・品牌・要点</label>
 <input type="search" id="search" placeholder="キーワードを入力 / 输入关键词" autocomplete="off" disabled>
@@ -30,7 +30,7 @@
 <p id="empty" class="empty" hidden>該当する情報はありません / 没有匹配结果</p>
 <nav class="pagination" aria-label="ページ / 分页"><button id="prev" disabled>← 前へ / 上一页</button><span id="page-count">0 / 0</span><button id="next" disabled>次へ / 下一页 →</button></nav>
 </main>
-<footer><div class="wrap">DEALS NO MORI · 出典 / 来源: may-money.com · 画像・原文本文の転載なし / 不转载原图与正文</div></footer>
+<footer><div class="wrap">DEALS NO MORI · 出典 / 来源: may-money.com・人気ポイ活ブログ・PayPay 公式 · 画像・原文本文の転載なし / 不转载原图与正文</div></footer>
 <script>
 'use strict';
 try{const theme=localStorage.getItem('deals-theme');if(theme==='dark'||theme==='light')document.documentElement.dataset.theme=theme}catch{}
@@ -46,7 +46,7 @@ function card(record){
  el.append(node('p','要点 / 要点: '+(record.benefit||'未記載 / 未注明')));
  const details=node('details');details.append(node('summary','条件を確認 / 查看条件'),node('p',record.conditions||'未記載 / 未注明'));el.append(details);
  const summary=node('p',record.zh_summary,'zh');summary.lang='zh-CN';el.append(summary);
- const link=node('a','原文 / 来源: may-money.com ↗','source');link.href=record.url;link.target='_blank';link.rel='noopener noreferrer';el.append(link);return el;
+ const link=node('a','原文 / 来源 ↗','source');link.href=record.url;link.target='_blank';link.rel='noopener noreferrer';el.append(link);return el;
 }
 function render(){
  const query=normalize(search.value).trim();
