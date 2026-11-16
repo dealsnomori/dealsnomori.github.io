@@ -22,8 +22,9 @@
 <label for="search">タイトル・ブランド・要点 / 标题・品牌・要点</label>
 <input type="search" id="search" placeholder="キーワードを入力 / 输入关键词" autocomplete="off" disabled>
 <div class="chips" id="categories" role="group" aria-label="分類 / 分类"></div>
+<div class="chips" role="group" aria-label="並び順 / 排序"><button id="sort-new" aria-pressed="true">新着順</button><button id="sort-end" aria-pressed="false">終了が近い順</button></div>
 </section>
-<div class="results-line"><span id="status" role="status" aria-live="polite">読み込み中 / 正在加载…</span><span>終了日順 → 日付なしは原文新着順 / 结束日优先</span></div>
+<div class="results-line"><span id="status" role="status" aria-live="polite">読み込み中 / 正在加载…</span><span id="sort-description">新着順 / 最新优先</span></div>
 <p id="error" role="alert" hidden>読み込めませんでした。再読み込みしてください。/ 加载失败，请刷新重试。</p>
 <noscript><p>JavaScript が必要です / 请启用 JavaScript。<a href="deals-data.json">JSON データ / 下载数据</a></p></noscript>
 <div id="deal-list" class="grid" aria-busy="true"></div>
@@ -36,7 +37,9 @@
 try{const theme=localStorage.getItem('deals-theme');if(theme==='dark'||theme==='light')document.documentElement.dataset.theme=theme}catch{}
 const categories=[['飲食','餐饮'],['決済・ポイント','支付・积分'],['旅行・交通','旅行・交通'],['通信','通信'],['金融','金融'],['イベント','活动'],['スーパー・コンビニ','超市・便利店'],['カード','信用卡'],['その他','其他']];
 const list=document.querySelector('#deal-list'),search=document.querySelector('#search'),status=document.querySelector('#status'),prev=document.querySelector('#prev'),next=document.querySelector('#next');
-const PAGE_SIZE=50;let records=[],category='',page=1;
+const PAGE_SIZE=50;let records=[],category='',page=1,order='new',reference=0;
+const newest=(a,b)=>(Date.parse(b.lastmod||b.start)||0)-(Date.parse(a.lastmod||a.start)||0);
+const ending=(a,b)=>a.end&&b.end?a.end.localeCompare(b.end)||newest(a,b):a.end?-1:b.end?1:newest(a,b);
 const normalize=value=>String(value||'').normalize('NFKC').toLocaleLowerCase();
 function node(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el}
 function card(record){
@@ -44,6 +47,10 @@ function card(record){
  el.append(node('div',[record.brand||'—',record.category,record.kind].filter(Boolean).join(' · '),'meta'),node('h2',record.title_ja));
  el.append(node('p','期間 / 期间: '+(record.start||record.end?`${record.start||'未定'} – ${record.end||'未定'}`:'常設/未定'),'period'));
  el.append(node('p','要点 / 要点: '+(record.benefit||'未記載 / 未注明')));
+ const age=reference-Date.parse(record.lastmod);
+ const days=Math.ceil((Date.parse(record.end)-reference)/86400000);
+ const badges=[];if(record.lastmod&&age>=0&&age<=7*86400000)badges.push('NEW');if(record.end&&days>=0&&days<=7)badges.push(`あと${days}日`);
+ if(badges.length)el.append(node('p',badges.join(' · '),'meta'));
  const details=node('details');details.append(node('summary','条件を確認 / 查看条件'),node('p',record.conditions||'未記載 / 未注明'));el.append(details);
  const summary=node('p',record.zh_summary,'zh');summary.lang='zh-CN';el.append(summary);
  const link=node('a','原文 / 来源 ↗','source');link.href=record.url;link.target='_blank';link.rel='noopener noreferrer';el.append(link);return el;
@@ -51,6 +58,7 @@ function card(record){
 function render(){
  const query=normalize(search.value).trim();
  const filtered=records.filter(record=>(!category||record.category===category)&&(!query||normalize([record.title_ja,record.brand,record.benefit].join(' ')).includes(query)));
+ filtered.sort(order==='new'?newest:ending);
  const pages=Math.ceil(filtered.length/PAGE_SIZE);page=Math.max(1,Math.min(page,pages||1));
  list.replaceChildren(...filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE).map(card));
  status.textContent=`${filtered.length} 件 / 条 · 全 ${records.length} 件 / 条`;
@@ -59,6 +67,7 @@ function render(){
 }
 function changePage(delta){page+=delta;render();document.querySelector('#search').scrollIntoView({block:'start'});}
 prev.addEventListener('click',()=>changePage(-1));next.addEventListener('click',()=>changePage(1));
+for(const value of ['new','end'])document.querySelector('#sort-'+value).addEventListener('click',()=>{order=value;page=1;for(const option of ['new','end'])document.querySelector('#sort-'+option).setAttribute('aria-pressed',String(option===value));document.querySelector('#sort-description').textContent=value==='new'?'新着順 / 最新优先':'終了が近い順 / 即将结束优先';render()});
 search.addEventListener('input',()=>{page=1;render()});
 for(const [value,label] of [['','全部 / 全部'],...categories.map(([ja,zh])=>[ja,ja+' / '+zh])]){
  const button=node('button',label);button.type='button';button.dataset.category=value;button.setAttribute('aria-pressed',String(!value));button.disabled=true;
@@ -67,7 +76,8 @@ for(const [value,label] of [['','全部 / 全部'],...categories.map(([ja,zh])=>
 (async()=>{try{
  const response=await fetch('deals-data.json');if(!response.ok)throw new Error('HTTP '+response.status);
  records=await response.json();
- records.sort((a,b)=>a.end&&b.end?a.end.localeCompare(b.end):a.end?-1:b.end?1:(Date.parse(b.lastmod)||0)-(Date.parse(a.lastmod)||0));
+ reference=Math.max(...records.map(row=>Date.parse(row.lastmod)||0));
+ records.sort(newest);
  search.disabled=false;document.querySelectorAll('#categories button').forEach(el=>el.disabled=false);render();
 }catch{status.textContent='読み込み失敗 / 加载失败';document.querySelector('#error').hidden=false}finally{list.setAttribute('aria-busy','false')}})();
 </script>
